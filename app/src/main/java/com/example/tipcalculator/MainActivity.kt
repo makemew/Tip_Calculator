@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -62,7 +64,10 @@ fun TipCalculatorApp() {
 @Composable
 fun TipCalculator() {
     var amountInput by remember { mutableStateOf("") }
-    val tip = calculateTip(amountInput.toIntOrNull()?:0)
+    var tip by remember { mutableFloatStateOf(0f) }
+    var tipPercentage by remember { mutableStateOf("") }
+    var roundUp by remember { mutableStateOf(false) }
+    tip = calculateTip(amountInput.toIntOrNull()?:0, tipPercentage.toIntOrNull()?:0, roundUp)
 
     Column(
         modifier = Modifier
@@ -80,10 +85,29 @@ fun TipCalculator() {
                 .padding(bottom = 16.dp, top = 40.dp)
                 .align(Alignment.Start)
         )
-        TipTextField(
+        EditTextField(
             text = amountInput,
-            onValueChange = { amountInput = it }
+            onValueChange = { amountInput = it },
+            label = "Bill Amount"
         )
+        EditTextField(
+            text = tipPercentage,
+            onValueChange = {tipPercentage = it},
+            label = "Tip Percentage"
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+            Text("Round up tip?")
+            Switch(
+                checked = roundUp,
+                onCheckedChange = {
+                    roundUp = !roundUp
+                }
+            )
+        }
         Text(
             "Tip Amount: \$${"%.2f".format(tip)}",
             style = TextStyle(
@@ -95,16 +119,16 @@ fun TipCalculator() {
     }
 }
 
-fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15) = billAmount * (tipPercentage/100f)
+fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15, roundUp: Boolean) = if (roundUp) Math.ceil(billAmount * (tipPercentage/100f).toDouble()).toFloat() else billAmount * (tipPercentage/100f)
 
 @Composable
-fun TipTextField(text: String, onValueChange: (String)->Unit) {
+fun EditTextField(text: String, onValueChange: (String)->Unit, label: String) {
     TextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 32.dp),
         value = text,
-        label = {Text("Bill Amount")},
+        label = {Text(label)},
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
         singleLine = true
