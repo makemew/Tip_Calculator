@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -29,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -37,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tipcalculator.ui.theme.TipCalculatorTheme
+import kotlin.math.ceil
 
 
 class MainActivity : ComponentActivity() {
@@ -88,12 +92,14 @@ fun TipCalculator() {
         EditTextField(
             text = amountInput,
             onValueChange = { amountInput = it },
-            label = "Bill Amount"
+            label = "Bill Amount",
+            leadingIcon = R.drawable.money
         )
         EditTextField(
             text = tipPercentage,
             onValueChange = {tipPercentage = it},
-            label = "Tip Percentage"
+            label = "Tip Percentage",
+            leadingIcon = R.drawable.percent
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -119,11 +125,17 @@ fun TipCalculator() {
     }
 }
 
-fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15, roundUp: Boolean) = if (roundUp) Math.ceil(billAmount * (tipPercentage/100f).toDouble()).toFloat() else billAmount * (tipPercentage/100f)
+fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15, roundUp: Boolean) = if (roundUp) ceil(billAmount * (tipPercentage/100f).toDouble()).toFloat() else billAmount * (tipPercentage/100f)
 
 @Composable
-fun EditTextField(text: String, onValueChange: (String)->Unit, label: String) {
+fun EditTextField(
+    text: String,
+    onValueChange: (String)->Unit,
+    label: String,
+    @DrawableRes leadingIcon: Int,
+    ) {
     TextField(
+        leadingIcon = { Icon(painter = painterResource(id = leadingIcon), null) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 32.dp),
