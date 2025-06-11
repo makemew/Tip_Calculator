@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.DrawableRes
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tipcalculator.ui.theme.TipCalculatorTheme
+import java.text.NumberFormat
 import kotlin.math.ceil
 
 
@@ -68,7 +68,7 @@ fun TipCalculatorApp() {
 @Composable
 fun TipCalculator() {
     var amountInput by remember { mutableStateOf("") }
-    var tip by remember { mutableFloatStateOf(0f) }
+    var tip by remember { mutableStateOf("") }
     var tipPercentage by remember { mutableStateOf("") }
     var roundUp by remember { mutableStateOf(false) }
     tip = calculateTip(amountInput.toIntOrNull()?:0, tipPercentage.toIntOrNull()?:0, roundUp)
@@ -115,7 +115,7 @@ fun TipCalculator() {
             )
         }
         Text(
-            "Tip Amount: \$${"%.2f".format(tip)}",
+            "Tip Amount: $tip",
             style = TextStyle(
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
@@ -124,15 +124,19 @@ fun TipCalculator() {
         Spacer(modifier = Modifier.height(150.dp))
     }
 }
-
-fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15, roundUp: Boolean) = if (roundUp) ceil(billAmount * (tipPercentage/100f).toDouble()).toFloat() else billAmount * (tipPercentage/100f)
+@VisibleForTesting
+fun calculateTip(billAmount:Int = 0, tipPercentage: Int = 15, roundUp: Boolean): String {
+    val tip = if (roundUp) ceil(billAmount * (tipPercentage/100f).toDouble()).toFloat()
+    else billAmount * (tipPercentage/100f)
+    return NumberFormat.getCurrencyInstance().format(tip)
+}
 
 @Composable
 fun EditTextField(
     text: String,
     onValueChange: (String)->Unit,
     label: String,
-    @DrawableRes leadingIcon: Int,
+    leadingIcon: Int,
     ) {
     TextField(
         leadingIcon = { Icon(painter = painterResource(id = leadingIcon), null) },
